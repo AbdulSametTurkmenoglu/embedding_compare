@@ -4,10 +4,9 @@
 
 ---
 
-![Embedding Models Comparison](https://via.placeholder.com/1200x400/1a1a1a/ffffff?text=Embedding+Models+Comparison)
 
 
-## 📌 TL;DR (Quick Summary)
+##  TL;DR (Quick Summary)
 
 > I compared 3 popular embedding models (Multi-MiniLM, BGE-M3, all-mpnet) using a Turkish medical Q&A dataset. **The results are surprising:**
 > 
