@@ -1,95 +1,85 @@
-# embedding_compare
+# Embedding Model Comparison for Turkish Medical Texts
 
-# Türkçe Tıbbi Metinler İçin En İyi Embedding Modeli Hangisi?
-
-## 3 popüler modeli MedTurkQuaD veri setiyle test ettim. En hızlı model her zaman en iyi değilmiş — işte kanıtı.
+## Which embedding model works best for Turkish medical texts? I tested 3 popular models with the MedTurkQuaD dataset. The fastest model isn't always the best — here's the proof.
 
 ---
 
 ![Embedding Models Comparison](https://via.placeholder.com/1200x400/1a1a1a/ffffff?text=Embedding+Models+Comparison)
 
----
 
-**⏱️ Okuma Süresi:** 10 dakika | **🔧 Seviye:** Orta | **💻 Kod:** Dahil  
-**👤 Yazar:** [İsminiz] | **📅 Tarih:** [Tarih]
+## 📌 TL;DR (Quick Summary)
 
----
-
-## 📌 TL;DR (Hızlı Özet)
-
-> 3 popüler embedding modelini (Multi-MiniLM, BGE-M3, all-mpnet) Türkçe tıbbi soru-cevap veri setiyle karşılaştırdım. **Sonuçlar şaşırtıcı:**
+> I compared 3 popular embedding models (Multi-MiniLM, BGE-M3, all-mpnet) using a Turkish medical Q&A dataset. **The results are surprising:**
 > 
-> - 🏆 **BGE-M3:** En iyi retrieval (MRR: 0.0338) ama en yavaş (50.59 sn)
-> - ⚡ **Multi-MiniLM:** En hızlı (15.81 sn) ve Türkçe morfolojisinde şampiyon (0.9284)
-> - 🚫 **all-mpnet:** İngilizce'de harika ama Türkçe'de fiyasko (MRR: 0.0084)
+> -  **BGE-M3:** Best retrieval (MRR: 0.0338) but slowest (50.59s)
+> -  **Multi-MiniLM:** Fastest (15.81s) and champion in Turkish morphology (0.9284)
+> -  **all-mpnet:** Great for English but fails in Turkish (MRR: 0.0084)
 > 
-> **Ana ders:** "Multilingual" etiketi yeterli değil. Domain-specific test şart!
+> **Key takeaway:** A "multilingual" label isn't enough. Domain-specific testing is essential!
 
 ---
 
-## 🎭 Hikaye: Neden Bu Teste İhtiyacım Oldu?
+##  The Story: Why I Needed This Test
 
-Geçen ay bir tıbbi soru-cevap sistemi geliştiriyordum. HuggingFace'te en popüler embedding modellerini denedim. Sonuçlar... felaketti.
+Last month, I was developing a medical Q&A system. I tried the most popular embedding models on HuggingFace. The results... were disastrous.
 
-"Apse nedir?" sorusuna sistem "akciğer kanseri" cevabını veriyordu. Modeli değiştirdim, biraz daha iyi oldu ama yine de tatmin edici değildi. 
+For the question "What is an abscess?", the system returned "lung cancer" as the answer. I switched models, got slightly better results, but still not satisfactory.
 
-O zaman şunu anladım: **Benchmark tabloları İngilizce için geçerli. Türkçe + Tıp kombinasyonu için hiçbir veri yoktu.**
+That's when I realized: **Benchmark tables are valid for English. There was no data for the Turkish + Medical combination.**
 
-Bu yazıda, **sistematik bir karşılaştırma** yaparak hangi modelin gerçekten işe yaradığını göstereceğim.
-
----
-
-## 🎯 Bu Karşılaştırma Neden Önemli?
-
-### Embedding Modeli Seçerken Yaşanan Tipik Sorunlar
-
-❌ **"En popüler modeli seçeyim"** → Popülerlik ≠ Senin use case'in için uygun  
-❌ **"Multilingual yazıyor, Türkçe destekler"** → Teoride evet, pratikte bazen hayır  
-❌ **"Benchmark'ta 1. sırada"** → Hangi dilde? Hangi domain'de?  
-❌ **"En büyük model en iyisidir"** → Daha yavaş, daha pahalı, her zaman daha iyi değil
-
-### Bu Testin Farkı
-
-✅ **Aynı veri seti** → Adil karşılaştırma  
-✅ **Aynı metrikler** → Objektif değerlendirme  
-✅ **Tekrarlanabilir kod** → Sen de deneyebilirsin  
-✅ **Türkçe + Domain-specific** → Gerçek dünya senaryosu
+In this article, I'll show you which model actually works through a **systematic comparison**.
 
 ---
 
-## 🔬 Test Düzeneği
+##  Why This Comparison Matters
 
-### Yarışmaya Katılan Modeller
+### Common Problems When Choosing an Embedding Model
 
-| Model | Boyut | Özellik | Beklenti |
-|-------|-------|---------|----------|
-| **Multi-MiniLM-L12-v2** | 384 | Hafif, çok dilli | Hızlı ama yeterli mi? |
-| **BGE-M3** | 1024 | Yeni nesil, güçlü | En iyi ama ne kadar yavaş? |
-| **all-mpnet-base-v2** | 768 | İngilizce SOTA | Türkçe'de ne olacak? |
+ **"Let me pick the most popular model"** → Popularity ≠ Suitable for your use case  
+ **"It says multilingual, supports Turkish"** → In theory yes, in practice sometimes no  
+ **"Ranked #1 on benchmarks"** → In which language? Which domain?  
+ **"Bigger model is better"** → Slower, more expensive, not always better
 
-### Test Arenası: MedTurkQuaD Veri Seti
+### What Makes This Test Different
 
-**Ne?** Türkçe tıbbi soru-cevap veri seti  
-**Neden zor?** İki katmanlı zorluk:
-1. 🇹🇷 **Türkçe morfolojisi** (ekler, çekim)
-2. 🏥 **Tıbbi terminoloji** (domain-specific)
+ **Same dataset** → Fair comparison  
+ **Same metrics** → Objective evaluation  
+ **Reproducible code** → You can try it yourself  
+ **Turkish + Domain-specific** → Real-world scenario
 
-**Örnek Zorluk:**
+---
 
+## 🔬 Test Setup
+
+### Competing Models
+
+| Model | Dimensions | Features | Expectation |
+|-------|-----------|----------|-------------|
+| **Multi-MiniLM-L12-v2** | 384 | Lightweight, multilingual | Fast but sufficient? |
+| **BGE-M3** | 1024 | Next-gen, powerful | Best but how slow? |
+| **all-mpnet-base-v2** | 768 | English SOTA | What about Turkish? |
+
+### Test Arena: MedTurkQuaD Dataset
+
+**What?** Turkish medical Q&A dataset  
+**Why difficult?** Two-layered challenge:
+1.  **Turkish morphology** (suffixes, inflections)
+2.  **Medical terminology** (domain-specific)
+
+**Example Challenge:**
 ```
-Soru: "Apse genellikle neyin neden olduğu bir yangı türüdür?"
+Question: "An abscess is usually a type of inflammation caused by what?"
 
-✅ Doğru: "piyojen bakterilerin"
-❌ Yanıltıcı Negatif: "akciğer dokularındaki hücrelerin kontrolsüz..."
+ Correct: "pyogenic bacteria"
+ Misleading Negative: "uncontrolled cells in lung tissue..."
 
-→ Her iki cevap da tıbbi terim içeriyor!
-→ Model ince ayrımları yakalayabilmeli
+→ Both answers contain medical terms!
+→ Model must capture subtle differences
 ```
 
-### Tekrarlanabilirlik Garantisi
-
+### Reproducibility Guarantee
 ```python
-# Her çalıştırmada aynı sonuç
+# Same results on every run
 device = "cuda" if torch.cuda.is_available() else "cpu"
 random.seed(42)
 np.random.seed(42)
@@ -98,71 +88,68 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(42)
 ```
 
-**Neden 42?** Evrenin, yaşamın ve her şeyin cevabı 😉 (ve AI topluluğunun standart seed'i)
+**Why 42?** The answer to life, the universe, and everything  (and the AI community's standard seed)
 
 ---
 
-## 📊 Test Süreci: Adım Adım
+##  Test Process: Step by Step
 
-### Adım 1: Veri Hazırlığı - Negative Sampling
-
+### Step 1: Data Preparation - Negative Sampling
 ```python
 def process_qa_data(qa_data):
     all_queries, all_positives, all_negatives = [], [], []
     
-    # Sorular ve doğru cevaplar
+    # Questions and correct answers
     for doc in qa_data.get('data', []):
         for paragraph in doc.get('paragraphs', []):
             for qa_pair in paragraph.get('qas', []):
                 all_queries.append(qa_pair['question'])
                 all_positives.append(qa_pair['answers'][0]['text'])
     
-    # Her pozitif için rastgele bir negative
+    # Random negative for each positive
     num_pairs = len(all_positives)
     for i in range(num_pairs):
         idx = i
-        while idx == i:  # Aynı cevabı alma
+        while idx == i:  # Don't pick the same answer
             idx = random.choice(range(num_pairs))
         all_negatives.append(all_positives[idx])
     
     return all_queries, all_positives, all_negatives
 ```
 
-**Neden bu yöntem?**
-- Gerçek dünyada da doğru cevap yanlışlar arasında kaybolur
-- Modelin ayırt etme yeteneğini test eder
-- Retrieval sistemleri için klasik benchmark yöntemi
+**Why this method?**
+- In the real world, correct answers get lost among wrong ones
+- Tests the model's discrimination ability
+- Classic benchmark method for retrieval systems
 
-### Adım 2: Embedding Üretimi ve Süre Ölçümü
-
+### Step 2: Embedding Generation and Time Measurement
 ```python
 for model_name, model in models_to_test.items():
     start_time = time.time()
     
-    # Encode et
+    # Encode
     query_vectors = model.encode(queries, convert_to_numpy=True, show_progress_bar=True)
     doc_vectors = model.encode(documents, convert_to_numpy=True, show_progress_bar=True)
     
     duration = time.time() - start_time
-    print(f"⏱️ {model_name}: {duration:.2f} saniye")
+    print(f" {model_name}: {duration:.2f} seconds")
 ```
 
-**Çıktı:**
+**Output:**
 ```
-⏱️ Multi-MiniLM-L12-v2: 15.81 saniye
-⏱️ BGE-M3: 50.59 saniye
-⏱️ all-mpnet-base-v2: 25.00 saniye
+ Multi-MiniLM-L12-v2: 15.81 seconds
+ BGE-M3: 50.59 seconds
+ all-mpnet-base-v2: 25.00 seconds
 ```
 
-### Adım 3: FAISS ile Similarity Search
+### Step 3: Similarity Search with FAISS
 
-**Kritik Detay:** L2 Normalizasyon
-
+**Critical Detail:** L2 Normalization
 ```python
 dim = query_vectors.shape[1]
 index = faiss.IndexFlatIP(dim)  # Inner Product Index
 
-# 🔑 Normalizasyon = Cosine Similarity
+#  Normalization = Cosine Similarity
 faiss.normalize_L2(doc_vectors)
 faiss.normalize_L2(query_vectors)
 
@@ -170,21 +157,20 @@ index.add(doc_vectors)
 D, I = index.search(query_vectors, k=len(documents))
 ```
 
-**Neden normalize?**
+**Why normalize?**
 
-| Durum | Formül | Ne ölçer? |
-|-------|--------|-----------|
-| Normalizasyon yok | `IP(A,B) = \|A\| × \|B\| × cos(θ)` | Büyüklük + Açı |
-| Normalizasyon var | `IP(A,B) = cos(θ)` | Sadece Açı (semantik) |
+| Case | Formula | What it measures? |
+|------|---------|-------------------|
+| No normalization | `IP(A,B) = \|A\| × \|B\| × cos(θ)` | Magnitude + Angle |
+| With normalization | `IP(A,B) = cos(θ)` | Only Angle (semantic) |
 
 ---
 
-## 📈 Değerlendirme: 4 Farklı Metrik
+##  Evaluation: 4 Different Metrics
 
-### 1️⃣ MRR (Mean Reciprocal Rank)
+###  MRR (Mean Reciprocal Rank)
 
-**Ne ölçer?** Doğru cevap ortalama kaçıncı sırada?
-
+**What does it measure?** On average, what rank is the correct answer?
 ```python
 def compute_mrr(search_results, true_indices):
     rr_sum = 0
@@ -195,45 +181,45 @@ def compute_mrr(search_results, true_indices):
     return rr_sum / len(true_indices)
 ```
 
-**Yorumlama:**
-- MRR = 1.0 → Her soru için doğru cevap 1. sırada (mükemmel!)
-- MRR = 0.5 → Ortalama 2. sırada
-- MRR = 0.033 → Ortalama ~30. sırada (düşük)
+**Interpretation:**
+- MRR = 1.0 → Correct answer at rank 1 for every question (perfect!)
+- MRR = 0.5 → On average at rank 2
+- MRR = 0.033 → On average at ~rank 30 (low)
 
-### 2️⃣ Recall@K
+###  Recall@K
 
-**Ne ölçer?** İlk K sonuçta doğru cevap var mı?
+**What does it measure?** Is the correct answer in the top K results?
 
-| Metrik | Açıklama |
-|--------|----------|
-| Recall@1 | İlk sonuç doğru mu? (en sıkı test) |
-| Recall@3 | İlk 3'te var mı? |
-| Recall@10 | İlk 10'da var mı? |
+| Metric | Description |
+|--------|-------------|
+| Recall@1 | Is the first result correct? (strictest test) |
+| Recall@3 | Is it in the top 3? |
+| Recall@10 | Is it in the top 10? |
 
-**Neden önemli?**
-- Recall@1 → Kullanıcıya tek sonuç gösteriyorsanız
-- Recall@10 → Liste halinde gösteriyorsanız
+**Why important?**
+- Recall@1 → If you're showing only one result to the user
+- Recall@10 → If you're showing a list
 
-### 3️⃣ Morphology Score
+###  Morphology Score
 
-**Ne ölçer?** Türkçe eklere duyarlılık
+**What does it measure?** Sensitivity to Turkish suffixes
 
-**Test çiftleri:**
+**Test pairs:**
 ```python
 morph_pairs = [
-    ("geliyorum", "gelmekteyim"),
-    ("gidecek", "gider"),
-    ("yaptım", "yapıyorum"),
-    ("okuyor", "okumakta"),
-    ("koşacağım", "koşarım"),
-    ("araba", "arabalar"),
-    ("evdeyim", "evde olmak")
+    ("geliyorum", "gelmekteyim"),      # I'm coming (different forms)
+    ("gidecek", "gider"),              # Will go / goes
+    ("yaptım", "yapıyorum"),           # I did / I'm doing
+    ("okuyor", "okumakta"),            # Reading (different forms)
+    ("koşacağım", "koşarım"),          # I will run / I run
+    ("araba", "arabalar"),             # Car / cars
+    ("evdeyim", "evde olmak")          # I'm at home (different forms)
 ]
 ```
 
-**Hesaplama:**
+**Calculation:**
 ```python
-# Her çiftin cosine benzerliğini hesapla
+# Calculate cosine similarity for each pair
 similarities = []
 for pair in morph_pairs:
     vec1 = model.encode(pair[0])
@@ -244,35 +230,33 @@ for pair in morph_pairs:
 morph_score = np.mean(similarities)
 ```
 
-**Yorumlama:**
-- Skor > 0.9 → Mükemmel Türkçe anlayışı
-- Skor 0.7-0.9 → İyi
-- Skor < 0.7 → Zayıf (her eki farklı kelime olarak görüyor)
+**Interpretation:**
+- Score > 0.9 → Excellent Turkish understanding
+- Score 0.7-0.9 → Good
+- Score < 0.7 → Weak (treats each suffix as different word)
 
-### 4️⃣ Silhouette Score
+###  Silhouette Score
 
-**Ne ölçer?** Embedding uzayı ne kadar düzenli?
-
+**What does it measure?** How organized is the embedding space?
 ```python
 kmeans = KMeans(n_clusters=2, random_state=42, n_init='auto')
 labels = kmeans.fit_predict(doc_vectors)
 sil_score = silhouette_score(doc_vectors, labels)
 ```
 
-**Yorumlama:**
-- +1'e yakın → Kümeler çok iyi ayrışmış
-- 0'a yakın → Kümeler iç içe
-- -1'e yakın → Yanlış kümelenmiş
+**Interpretation:**
+- Close to +1 → Clusters are well separated
+- Close to 0 → Clusters overlap
+- Close to -1 → Incorrectly clustered
 
 ---
 
-## 🏆 Sonuçlar: Şampiyonlar ve Sürprizler
+##  Results: Champions and Surprises
 
-### 📊 Tam Sonuç Tablosu
-
+###  Complete Results Table
 ```
 ┌─────────────────────┬──────┬──────────┬────────────┬─────────────┬────────┬──────────┬──────────┬──────────┬───────────┐
-│ Model               │ Boyut│ Süre (sn)│ Silhouette │ Morph Score │  MRR   │ Recall@1 │ Recall@3 │ Recall@5 │ Recall@10 │
+│ Model               │ Dim  │ Time (s) │ Silhouette │ Morph Score │  MRR   │ Recall@1 │ Recall@3 │ Recall@5 │ Recall@10 │
 ├─────────────────────┼──────┼──────────┼────────────┼─────────────┼────────┼──────────┼──────────┼──────────┼───────────┤
 │ BGE-M3              │ 1024 │  50.59   │   0.0366   │   0.8113    │ 0.0338 │  1.12%   │  3.24%   │  4.91%   │   7.66%   │
 │ Multi-MiniLM-L12-v2 │  384 │  15.81   │   0.0758   │   0.9284    │ 0.0200 │  0.70%   │  1.93%   │  2.72%   │   4.34%   │
@@ -280,175 +264,175 @@ sil_score = silhouette_score(doc_vectors, labels)
 └─────────────────────┴──────┴──────────┴────────────┴─────────────┴────────┴──────────┴──────────┴──────────┴───────────┘
 ```
 
-### 🎪 Görsel Analiz
+###  Visual Analysis
 
-#### 1. Performans Metrikleri (2×2 Görsel)
+#### 1. Performance Metrics (2×2 Grid)
 
-![Performans Raporu](performans_metrikleri_raporu.png)
+![Performance Report](performans_metrikleri_raporu.png)
 
-**Ne görüyoruz?**
-- **MRR grafiği:** Tüm barlar kısa (düşük değerler) → Domain çok zor
-- **Recall@1 grafiği:** BGE-M3 açık ara önde ama yine de düşük
-- **Morph Score grafiği:** Multi-MiniLM şampiyon 🏆
-- **Silhouette grafiği:** all-mpnet birinci ama bu yanıltıcı
+**What we see:**
+- **MRR chart:** All bars are short (low values) → Domain is very challenging
+- **Recall@1 chart:** BGE-M3 clearly ahead but still low
+- **Morph Score chart:** Multi-MiniLM champion 🏆
+- **Silhouette chart:** all-mpnet first but this is misleading
 
-#### 2. Hız vs Kalite Trade-off (Scatter Plot)
+#### 2. Speed vs Quality Trade-off (Scatter Plot)
 
-![Hız vs Kalite](performans_vs_hiz.png)
+![Speed vs Quality](performans_vs_hiz.png)
 
-**Analiz:**
-- **Sol üst = İdeal bölge** (hızlı + kaliteli)
-- **BGE-M3:** Sağ üstte (yavaş ama kaliteli)
-- **Multi-MiniLM:** Sol altta (hızlı ama MRR orta)
-- **all-mpnet:** Ortada kaybolmuş (ne hızlı ne kaliteli)
+**Analysis:**
+- **Top left = Ideal zone** (fast + quality)
+- **BGE-M3:** Top right (slow but quality)
+- **Multi-MiniLM:** Bottom left (fast but medium MRR)
+- **all-mpnet:** Lost in the middle (neither fast nor quality)
 
-**Karar rehberi:**
-- Real-time sistem → Multi-MiniLM
+**Decision guide:**
+- Real-time system → Multi-MiniLM
 - Offline batch → BGE-M3
 
-#### 3. Radar Chart: Model Profilleri
+#### 3. Radar Chart: Model Profiles
 
-![Radar Profil](modellerin_radar_profili.png)
+![Radar Profile](modellerin_radar_profili.png)
 
-**Karakter analizi:**
+**Character analysis:**
 
-🔵 **BGE-M3:** "Yavaş ama Etkili"
-- MRR yüksek, speed düşük
-- Büyük projelerde batch işleme için ideal
+ **BGE-M3:** "Slow but Effective"
+- High MRR, low speed
+- Ideal for batch processing in large projects
 
-🟢 **Multi-MiniLM:** "Hızlı ve Türkçe'ye Özel"
-- Speed ve morph score yüksek
-- Real-time uygulamalar için mükemmel
+ **Multi-MiniLM:** "Fast and Turkish-Specialized"
+- High speed and morph score
+- Perfect for real-time applications
 
-🔴 **all-mpnet:** "Düzenli ama Yanlış"
-- Sadece silhouette iyi
-- Türkçe için kullanmayın
+ **all-mpnet:** "Organized but Wrong"
+- Only good silhouette
+- Don't use for Turkish
 
 ---
 
-## 💥 Şaşırtıcı Bulgular ve Analizler
+##  Surprising Findings and Analysis
 
-### 🚨 Bulgu 1: MRR Değerleri Neden Bu Kadar Düşük?
+###  Finding 1: Why Are MRR Values So Low?
 
-**Beklenti:** MRR > 0.5 (doğru cevap ilk 2'de)  
-**Gerçek:** MRR = 0.008-0.033 (doğru cevap 30-120. sırada)
+**Expectation:** MRR > 0.5 (correct answer in top 2)  
+**Reality:** MRR = 0.008-0.033 (correct answer at rank 30-120)
 
-**3 Neden:**
+**3 Reasons:**
 
-1. **Domain Gap (Domain Boşluğu)**
-   - Modeller Wikipedia, kitaplar, haberlerle eğitilmiş
-   - Tıbbi terminoloji eğitim verisinin %1'inden azı
-   - "Piyojen bakteriler" gibi terimler nadiren görülüyor
+1. **Domain Gap**
+   - Models trained on Wikipedia, books, news
+   - Medical terminology is less than 1% of training data
+   - Terms like "pyogenic bacteria" rarely seen
 
-2. **Negative Sampling Zorluğu**
-   - Rastgele seçilen "yanlış" cevaplar aslında ilgili
-   - Her ikisi de tıbbi terim → Model karıştırıyor
-   - Gerçek dünya senaryosuna çok benzer (iyi bir test!)
+2. **Negative Sampling Difficulty**
+   - Randomly selected "wrong" answers are actually related
+   - Both contain medical terms → Model confuses them
+   - Very similar to real-world scenario (good test!)
 
-3. **Fine-tuning Eksikliği**
-   - Genel amaçlı modeller spesifik domain'de zayıf
-   - Fine-tuning ile 5-10x iyileşme beklenebilir
+3. **Lack of Fine-tuning**
+   - General-purpose models weak in specific domains
+   - 5-10x improvement expected with fine-tuning
 
-> **💡 Pratik ders:** MRR < 0.1 görürseniz panik yapmayın. Domain-specific veri setleri için normal. Fine-tuning şart!
+> ** Practical lesson:** Don't panic if you see MRR < 0.1. Normal for domain-specific datasets. Fine-tuning is essential!
 
-### 🎭 Bulgu 2: Morfoloji Şampiyonu ≠ Retrieval Şampiyonu
+###  Finding 2: Morphology Champion ≠ Retrieval Champion
 
-| Model | Morph Score | MRR | İlişki |
-|-------|-------------|-----|--------|
-| Multi-MiniLM | 🥇 0.9284 | 🥈 0.0200 | Ters korelasyon! |
+| Model | Morph Score | MRR | Relationship |
+|-------|-------------|-----|--------------|
+| Multi-MiniLM | 🥇 0.9284 | 🥈 0.0200 | Inverse correlation! |
 | BGE-M3 | 🥈 0.8113 | 🥇 0.0338 | |
 
-**Neden böyle?**
+**Why?**
 
-**Morfoloji için gerekli:**
-- Surface-level benzerlik ("geliyorum" ≈ "gelmekteyim")
-- Dil bilgisi kuralları
+**Required for morphology:**
+- Surface-level similarity ("geliyorum" ≈ "gelmekteyim")
+- Grammar rules
 - Syntax patterns
 
-**Retrieval için gerekli:**
+**Required for retrieval:**
 - Deep semantic understanding
 - Context awareness
 - Domain knowledge
 
-**Analoji:**
-> Morfoloji = Kelimelerin **şeklini** tanımak  
-> Retrieval = Kelimelerin **anlamını** kavramak
+**Analogy:**
+> Morphology = Recognizing word **forms**  
+> Retrieval = Understanding word **meanings**
 
-### 🇬🇧 Bulgu 3: İngilizce Modelinin Türkçe Fiyaskosu
+### 🇬🇧 Finding 3: English Model's Turkish Fiasco
 
-**all-mpnet-base-v2 rapor kartı:**
-- ❌ MRR: 0.0084 (son sıra)
-- ❌ Morph: 0.7460 (son sıra)
-- ❌ Recall@1: 0.30% (son sıra)
-- ✅ Silhouette: 0.1185 (1. sıra) 🤔
+**all-mpnet-base-v2 report card:**
+-  MRR: 0.0084 (last place)
+-  Morph: 0.7460 (last place)
+-  Recall@1: 0.30% (last place)
+-  Silhouette: 0.1185 (1st place) 🤔
 
-**Neden silhouette yüksek ama diğerleri düşük?**
+**Why high silhouette but low others?**
 
-Silhouette "düzenlilik" ölçer, "doğruluk" değil. Model vektörleri güzel organize etmiş ama **yanlış organize etmiş**.
+Silhouette measures "organization", not "correctness". The model organized vectors nicely but **organized them wrongly**.
 
-**Analoji:**
-> Kitapları renklerine göre düzenlemişsiniz (iyi organize)  
-> Ama konularına göre arayanlar bulamıyor (yanlış organize)
+**Analogy:**
+> You organized books by color (well organized)  
+> But people searching by topic can't find them (wrongly organized)
 
-**Ders:** Tek metriğe güvenmeyin!
+**Lesson:** Don't trust a single metric!
 
-### ⚡ Bulgu 4: Hız Farkı Dramatik
+###  Finding 4: Dramatic Speed Difference
 
-| Model | Süre | Multi-MiniLM'e göre |
-|-------|------|---------------------|
-| Multi-MiniLM | 15.81 sn | 1.0x (referans) |
-| all-mpnet | 25.00 sn | 1.6x daha yavaş |
-| BGE-M3 | 50.59 sn | **3.2x daha yavaş** |
+| Model | Time | vs Multi-MiniLM |
+|-------|------|-----------------|
+| Multi-MiniLM | 15.81s | 1.0x (baseline) |
+| all-mpnet | 25.00s | 1.6x slower |
+| BGE-M3 | 50.59s | **3.2x slower** |
 
-**Gerçek dünya etkisi:**
+**Real-world impact:**
 
-Senaryoya göre 1000 sorgu işleme süresi:
-- Multi-MiniLM: ~4.4 saat
-- all-mpnet: ~7 saat
-- BGE-M3: ~14 saat
+Processing 1000 queries:
+- Multi-MiniLM: ~4.4 hours
+- all-mpnet: ~7 hours
+- BGE-M3: ~14 hours
 
-**Real-time sistemde:**
-- Kullanıcı başına 50ms vs 160ms fark yaratır
-- 100 eşzamanlı kullanıcı = sunucu terkar
+**In real-time systems:**
+- 50ms vs 160ms per user makes a difference
+- 100 concurrent users = server struggles
 
 ---
 
-## 🎯 Karar Rehberi: Hangi Modeli Seçmeliyim?
+##  Decision Guide: Which Model Should I Choose?
 
-### 📋 Senaryo Bazlı Öneriler
+###  Scenario-Based Recommendations
 
-#### Senaryo 1: Müşteri Destek Chatbot (Real-time)
+#### Scenario 1: Customer Support Chatbot (Real-time)
 
-**Gereksinimler:**
-- ⚡ Hız kritik (kullanıcı beklemez)
-- 🇹🇷 Türkçe morfoloji önemli (kullanıcılar farklı yazıyor)
-- 📊 Yeterli doğruluk (mükemmel olmasına gerek yok)
+**Requirements:**
+-  Speed critical (users won't wait)
+-  Turkish morphology important (users write differently)
+-  Sufficient accuracy (doesn't need to be perfect)
 
-**Seçim:** ✅ **Multi-MiniLM-L12-v2**
+**Choice:**  **Multi-MiniLM-L12-v2**
 
-**Neden:**
-- 3.2x daha hızlı (BGE-M3'e göre)
-- Morfoloji şampiyonu (0.9284)
-- MRR yeterli (0.0200)
-- Küçük vektör = az RAM
+**Why:**
+- 3.2x faster (vs BGE-M3)
+- Morphology champion (0.9284)
+- Sufficient MRR (0.0200)
+- Small vectors = low RAM
 
-**Örnek implementasyon:**
+**Example implementation:**
 ```python
 from sentence_transformers import SentenceTransformer
 import faiss
 
 model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
-# KB'deki tüm cevapları encode et (offline)
-kb_answers = ["cevap1", "cevap2", ...]
+# Encode all KB answers (offline)
+kb_answers = ["answer1", "answer2", ...]
 answer_vectors = model.encode(kb_answers)
 
-# FAISS index oluştur
+# Create FAISS index
 index = faiss.IndexFlatIP(384)
 faiss.normalize_L2(answer_vectors)
 index.add(answer_vectors)
 
-# Kullanıcı sorusu geldiğinde (online)
+# When user question arrives (online)
 def get_answer(user_question):
     q_vec = model.encode([user_question])
     faiss.normalize_L2(q_vec)
@@ -456,39 +440,39 @@ def get_answer(user_question):
     return [kb_answers[i] for i in I[0]]
 ```
 
-#### Senaryo 2: Tıbbi Doküman Arama Motoru (Offline)
+#### Scenario 2: Medical Document Search Engine (Offline)
 
-**Gereksinimler:**
-- 🎯 Kalite kritik (yanlış sonuç kritik hata)
-- ⏳ Hız ikincil (batch işlem)
-- 🏥 Domain çok spesifik
+**Requirements:**
+-  Quality critical (wrong result = critical error)
+-  Speed secondary (batch processing)
+-  Very specific domain
 
-**Seçim:** ✅ **BGE-M3 + Fine-tuning**
+**Choice:**  **BGE-M3 + Fine-tuning**
 
-**Neden:**
-- En iyi MRR (0.0338)
-- Büyük model = daha fazla kapüasite
-- Hız batch işlemde önemsiz
+**Why:**
+- Best MRR (0.0338)
+- Large model = more capacity
+- Speed irrelevant in batch processing
 
-**Fine-tuning örneği:**
+**Fine-tuning example:**
 ```python
 from sentence_transformers import SentenceTransformer, InputExample, losses
 from torch.utils.data import DataLoader
 
-# Model yükle
+# Load model
 model = SentenceTransformer('BAAI/bge-m3')
 
-# Tıbbi soru-cevap çiftlerini hazırla
+# Prepare medical Q&A pairs
 train_examples = [
-    InputExample(texts=['Apse nedir?', 'piyojen bakterilerin neden olduğu yangı']),
-    InputExample(texts=['Tansiyon yüksekliği...', 'hipertansiyon...']),
-    # ... en az 1000 örnek
+    InputExample(texts=['What is an abscess?', 'inflammation caused by pyogenic bacteria']),
+    InputExample(texts=['High blood pressure...', 'hypertension...']),
+    # ... at least 1000 examples
 ]
 
-# DataLoader oluştur
+# Create DataLoader
 train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
 
-# Contrastive loss ile eğit
+# Train with contrastive loss
 train_loss = losses.MultipleNegativesRankingLoss(model)
 
 # Fine-tune
@@ -498,66 +482,324 @@ model.fit(
     warmup_steps=100
 )
 
-# Kaydet
+# Save
 model.save('bge-m3-medical-turkish')
 ```
 
-#### Senaryo 3: E-ticaret Ürün Arama
+#### Scenario 3: E-commerce Product Search
 
-**Gereksinimler:**
-- 🇹🇷 Türkçe varyasyonlar (tişört/tshirt, çorap/sok)
-- ⚡ Orta hız
-- 📦 Çok fazla ürün
+**Requirements:**
+- 🇹🇷 Turkish variations (tişört/tshirt, çorap/sock)
+-  Medium speed
+-  Lots of products
 
-**Seçim:** ✅ **Multi-MiniLM-L12-v2**
+**Choice:**  **Multi-MiniLM-L12-v2**
 
-**Neden:**
-- Morfoloji şampiyonu (kullanıcılar farklı yazıyor)
-- Hızlı
-- Küçük vektör = milyonlarca ürün indexlenebilir
+**Why:**
+- Morphology champion (users write differently)
+- Fast
+- Small vectors = millions of products can be indexed
 
-#### Senaryo 4: Çok Dilli Platform (TR + EN + DE)
+#### Scenario 4: Multilingual Platform (TR + EN + DE)
 
-**Gereksinimler:**
-- 🌍 Cross-lingual search
-- 🔄 Tek model birden fazla dil
+**Requirements:**
+-  Cross-lingual search
+-  Single model for multiple languages
 
-**Seçim:** ✅ **BGE-M3**
+**Choice:**  **BGE-M3**
 
-**Neden:**
-- 100+ dil desteği
-- Cross-lingual alignment iyi
-- Tek embedding space
+**Why:**
+- 100+ language support
+- Good cross-lingual alignment
+- Single embedding space
 
 ---
 
-## 🛠️ Kodu Çalıştırma Rehberi
+##  Running the Code Guide
 
-### 📦 Kurulum
-
+###  Installation
 ```bash
-# Virtual environment oluştur
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Paketleri yükle
+# Install packages
 pip install sentence-transformers faiss-cpu scikit-learn pandas torch matplotlib seaborn
 
-# GPU varsa
-pip install faiss-gpu  # faiss-cpu yerine
+# If you have GPU
+pip install faiss-gpu  # instead of faiss-cpu
 ```
 
-### 🚀 Hızlı Başlangıç
-
-```python
-# 1. Kodu indir
+###  Quick Start
+```bash
+# 1. Clone the code
 git clone [repository-url]
 cd embedding-comparison
 
-# 2. data.json hazırla (veya fallback örnek veri kullan)
-# 3. Çalıştır
+# 2. Prepare data.json (or use fallback sample data)
+# 3. Run
 python compare_embedding_v2.py
 
-# 4. Sonuçlar
-# ✅ Terminalde tablo
-# ✅ 3 görsel PNG olarak kaydedilir
+# 4. Results
+#  Table in terminal
+#  3 visualizations saved as PNG
+```
+
+###  Dataset Format
+
+**MedTurkQuaD JSON structure:**
+```json
+{
+  "data": [
+    {
+      "title": "Medical Topic",
+      "paragraphs": [
+        {
+          "context": "Medical text context...",
+          "qas": [
+            {
+              "question": "What causes abscess?",
+              "answers": [
+                {
+                  "text": "pyogenic bacteria",
+                  "answer_start": 42
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+###  Customization Options
+
+#### Add New Model
+```python
+models_to_test = {
+    'Multi-MiniLM-L12-v2': SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'),
+    'BGE-M3': SentenceTransformer('BAAI/bge-m3'),
+    'all-mpnet-base-v2': SentenceTransformer('sentence-transformers/all-mpnet-base-v2'),
+    'YOUR-MODEL': SentenceTransformer('your-model-name')  # Add here
+}
+```
+
+#### Adjust Turkish Morphology Tests
+```python
+# Add more challenging pairs
+morph_pairs = [
+    ("geliyorum", "gelmekteyim"),
+    ("custom_word1", "custom_word2"),  # Add your own
+]
+```
+
+#### Change Evaluation Metrics
+```python
+# Adjust recall@k values
+recall_at = [1, 3, 5, 10, 20]  # Add @20 if needed
+```
+
+---
+
+##  Understanding the Visualizations
+
+### 1. Performance Metrics Report (4 subplots)
+
+**Purpose:** Compare all models across 4 key metrics
+
+**How to read:**
+- Taller bars = better (except Silhouette, see below)
+- Look for consistent patterns across metrics
+- Single high bar doesn't mean best overall
+
+### 2. Performance vs Speed Scatter Plot
+
+**Purpose:** Trade-off analysis
+
+**Quadrants:**
+- **Top-left:** Fast and accurate (ideal but rare)
+- **Top-right:** Slow but accurate (batch processing)
+- **Bottom-left:** Fast but less accurate (real-time with compromise)
+- **Bottom-right:** Slow and inaccurate (avoid!)
+
+### 3. Radar Chart: Model Profiles
+
+**Purpose:** Holistic view of strengths/weaknesses
+
+**Reading tips:**
+- Larger area = better overall (but check which dimensions!)
+- Look for spikes = strong specialization
+- Balanced polygon = well-rounded model
+
+---
+
+##  Advanced Topics
+
+### Fine-tuning for Your Domain
+
+**When to fine-tune:**
+- MRR < 0.1 on your data
+- Your domain very different from general text
+- You have 1000+ labeled examples
+
+**Simple fine-tuning recipe:**
+```python
+from sentence_transformers import SentenceTransformer, InputExample, losses
+from torch.utils.data import DataLoader
+
+# 1. Prepare training data
+train_examples = []
+for query, positive, negative in your_data:
+    train_examples.append(InputExample(texts=[query, positive, negative]))
+
+# 2. Create DataLoader
+train_dataloader = DataLoader(train_examples, shuffle=True, batch_size=16)
+
+# 3. Define loss
+train_loss = losses.TripletLoss(model)
+
+# 4. Train
+model.fit(
+    train_objectives=[(train_dataloader, train_loss)],
+    epochs=3,
+    warmup_steps=100,
+    output_path='fine-tuned-model'
+)
+```
+
+### Hybrid Search: Combining Multiple Models
+```python
+def hybrid_search(query, alpha=0.7):
+    # Fast model for initial filtering
+    fast_results = multi_minilm.search(query, k=100)
+    
+    # Slow model for re-ranking top results
+    reranked = bge_m3.rerank(query, fast_results)
+    
+    return reranked[:10]
+```
+
+### Monitoring Model Performance
+```python
+import mlflow
+
+# Log metrics during evaluation
+mlflow.log_metric("mrr", mrr_score)
+mlflow.log_metric("recall_at_1", recall_1)
+mlflow.log_artifact("performance_plot.png")
+```
+
+---
+
+##  Troubleshooting
+
+### Common Issues
+
+#### 1. Out of Memory Error
+
+**Symptoms:**
+```
+RuntimeError: CUDA out of memory
+```
+
+**Solutions:**
+```python
+# Reduce batch size in encoding
+model.encode(texts, batch_size=8)  # default is 32
+
+# Or use CPU
+model = SentenceTransformer('model-name', device='cpu')
+```
+
+#### 2. FAISS Installation Issues
+
+**Windows:**
+```bash
+# Use conda instead of pip
+conda install -c conda-forge faiss-cpu
+```
+
+**macOS (M1/M2):**
+```bash
+conda install -c conda-forge faiss-cpu
+```
+
+#### 3. Slow Encoding
+
+**Check GPU usage:**
+```python
+import torch
+print(torch.cuda.is_available())  # Should be True
+print(model.device)  # Should be 'cuda'
+```
+
+**Force GPU:**
+```python
+model = SentenceTransformer('model-name', device='cuda')
+```
+
+#### 4. Different Results on Each Run
+
+**Ensure reproducibility:**
+```python
+import random, numpy as np, torch
+
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(42)
+    torch.backends.cudnn.deterministic = True
+```
+
+---
+
+##  Further Reading
+
+### Academic Papers
+
+- **MTEB:** [Massive Text Embedding Benchmark](https://arxiv.org/abs/2210.07316)
+- **BGE-M3:** [BGE M3-Embedding](https://arxiv.org/abs/2402.03216)
+- **Sentence-BERT:** [Sentence Embeddings using Siamese Networks](https://arxiv.org/abs/1908.10084)
+
+### Practical Guides
+
+- [HuggingFace Sentence Transformers Docs](https://www.sbert.net/)
+- [FAISS Documentation](https://github.com/facebookresearch/faiss/wiki)
+- [Fine-tuning Guide](https://www.sbert.net/docs/training/overview.html)
+
+### Related Projects
+
+- **MTEB Leaderboard:** [https://huggingface.co/spaces/mteb/leaderboard](https://huggingface.co/spaces/mteb/leaderboard)
+- **Sentence Transformers:** [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)
+
+---
+
+##  Contributing
+
+Contributions are welcome! Areas for improvement:
+
+- [ ] Add more Turkish embedding models
+- [ ] Test on other Turkish domains (legal, finance)
+- [ ] Implement cross-lingual evaluation
+- [ ] Add interactive dashboard
+- [ ] Benchmark on GPU vs CPU
+
+**How to contribute:**
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/NewModel`)
+3. Commit changes (`git commit -m 'Add new model'`)
+4. Push to branch (`git push origin feature/NewModel`)
+5. Open Pull Request
+
+---
+
+
+
+
+
+**💬 Have questions? Start a discussion!**
+
+**🐛 Found a bug? Open an issue!**
