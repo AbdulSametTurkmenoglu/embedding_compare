@@ -48,7 +48,7 @@ In this article, I'll show you which model actually works through a **systematic
 
 ---
 
-## 🔬 Test Setup
+##  Test Setup
 
 ### Competing Models
 
